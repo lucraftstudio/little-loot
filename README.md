@@ -19,3 +19,7 @@ Local preview: python -m http.server 8080
 
 Powered by Lucraft Studio.
 Showcase concept; no payment or order service is connected.
+
+Product detail card previews now show only the selected figure’s matching card. Upload all assets/card-*.webp files with the updated app.js and index.html.
+
+Homepage refresh: dual collection hero, clickable collection entrances, mobile layouts. Individual matching cards are included for all 11 figures.

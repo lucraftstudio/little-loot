@@ -4,76 +4,87 @@
     "image": "assets/img-36.webp",
     "tag": "REGULAR",
     "description": "A bold red look. A little attitude. A moment made for the spotlight.",
-    "category": "ahyeon"
+    "category": "ahyeon",
+    "card": "assets/card-ahyeon-hot-sauce.webp"
   },
   {
     "name": "Stage Charisma",
     "image": "assets/img-22.webp",
     "tag": "REGULAR",
     "description": "Black, denim and unmistakable stage presence.",
-    "category": "ahyeon"
+    "category": "ahyeon",
+    "card": "assets/card-ahyeon-stage-charisma.webp"
   },
   {
     "name": "Encore Bloom",
     "image": "assets/img-33.webp",
     "tag": "REGULAR",
     "description": "A bright encore in white and silver.",
-    "category": "ahyeon"
+    "category": "ahyeon",
+    "card": "assets/card-ahyeon-encore-bloom.webp"
   },
   {
     "name": "Love Signal",
     "image": "assets/img-35.webp",
     "tag": "REGULAR",
     "description": "Pink details and a playful heart-filled moment.",
-    "category": "ahyeon"
+    "category": "ahyeon",
+    "card": "assets/card-ahyeon-love-signal.webp"
   },
   {
     "name": "Soft Moment",
     "image": "assets/img-34.webp",
     "tag": "REGULAR",
     "description": "A quiet moment in a delicate floral dress.",
-    "category": "ahyeon"
+    "category": "ahyeon",
+    "card": "assets/card-ahyeon-soft-moment.webp"
   },
   {
     "name": "Golden",
     "image": "assets/img-32.webp",
     "tag": "SECRET",
     "description": "A golden stage scene with miniature companions.",
-    "category": "ahyeon"
+    "category": "ahyeon",
+    "card": "assets/card-ahyeon-golden.webp"
   },
   {
     "name": "Eggyeon",
     "image": "assets/img-31.webp",
     "tag": "SUPER SECRET",
     "description": "A playful surprise surrounded by tiny characters.",
-    "category": "ahyeon"
+    "category": "ahyeon",
+    "card": "assets/card-ahyeon-eggyeon.webp"
   },
   {
     "name": "Winter",
     "image": "assets/aespa-16.webp",
     "tag": "REGULAR",
     "description": "A short black hairstyle and layered black stage look.",
-    "category": "aespa"
+    "category": "aespa",
+    "card": "assets/card-aespa-winter.webp"
   },
   {
     "name": "Karina",
     "image": "assets/aespa-14.webp",
     "tag": "REGULAR",
     "description": "A high ponytail, headband and asymmetric black stage outfit.",
-    "category": "aespa"
+    "category": "aespa",
+    "card": "assets/card-aespa-karina.webp"
   },
   {
     "name": "Giselle",
     "image": "assets/aespa-15.webp",
     "tag": "REGULAR",
     "description": "Pink hair and a black stage outfit with metallic details.",
-    "category": "aespa"
+    "category": "aespa",
+    "card": "assets/card-aespa-giselle.webp"
   },
   {
     "name": "Ningning",
     "image": "assets/aespa-13.webp",
     "tag": "REGULAR",
     "description": "An updo and a black-and-silver stage look with wide-leg trousers.",
-    "category": "aespa"
+    "category": "aespa",
+    "card": "assets/card-aespa-ningning.webp"
   }
 ]
