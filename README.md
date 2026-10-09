@@ -1,31 +1,21 @@
-# Little Loot — Collectible Figures & Blind Boxes
+# Little Loot — AHYEON + aespa
 
-Standalone static website. No build step or backend required.
+Static website. No installation or build step required.
 
-## GitHub Pages 发布
-1. 在 GitHub 建立 public repository，例如 little-loot。
-2. 解压 ZIP，将 index.html、styles.css、app.js、assets 文件夹和 .nojekyll 放在 repository 根目录。不要上传 ZIP 本身。
-3. 打开 Settings → Pages。
-4. Source 选择 Deploy from a branch。
-5. Branch 选择 main，文件夹选择 / (root)，点击 Save。
-6. 部署完成后，在 Pages 页面打开网站链接。
+## GitHub Pages
+Upload index.html, styles.css, app.js, catalog.json, .nojekyll and the assets folder into the repository root. Settings → Pages → Deploy from a branch → main → / (root) → Save.
+Replace the existing files and upload all new assets. Commit changes, wait for the Pages deployment to finish, then hard refresh the site.
 
-也可将这些文件放到任何静态网站服务器的公开目录。
-
-## Local preview
-Open index.html directly, or run: python -m http.server 8080
-Then visit http://localhost:8080
+## Categories
+All collections (11), AHYEON Moments (7), aespa WHIPLASH (4).
+Category selection updates the product grid, edition counts, collection imagery, packaging, cards and specifications. Product details always use that product's own collection rules.
+In All collections, the lower collection sections are labeled AHYEON; choose aespa to switch them.
+The aespa sealed whole set contains 4 boxes, one of each character, with no repeats. No secret editions are listed in its source PDF.
 
 ## Editing
-- index.html: content and page structure
-- styles.css: responsive styling
-- app.js: product details, filters and box options
-- assets/: original PDF artwork exported as WebP
+index.html: structure; styles.css: appearance; app.js: collection and product data plus interactions. catalog.json is a readable copy of product data for reference; update app.js to change displayed products.
 
-Footer: Powered by Lucraft Studio.
-This is a showcase site. Payments and order processing are not connected.
-Product information is a design concept from the supplied PDF. Before selling, confirm product specifications and permissions for the branding and artwork.
+Local preview: python -m http.server 8080
 
-Store name: Little Loot. Featured series: AHYEON Moments Collection.
-
-Latest update: expanded product dialog with figure/card gallery, edition details, specifications, box format selector and blind box notes. Card preview shows the whole collection card sheet.
+Powered by Lucraft Studio.
+Showcase concept; no payment or order service is connected.

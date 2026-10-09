@@ -1,0 +1,79 @@
+[
+  {
+    "name": "Hot Sauce",
+    "image": "assets/img-36.webp",
+    "tag": "REGULAR",
+    "description": "A bold red look. A little attitude. A moment made for the spotlight.",
+    "category": "ahyeon"
+  },
+  {
+    "name": "Stage Charisma",
+    "image": "assets/img-22.webp",
+    "tag": "REGULAR",
+    "description": "Black, denim and unmistakable stage presence.",
+    "category": "ahyeon"
+  },
+  {
+    "name": "Encore Bloom",
+    "image": "assets/img-33.webp",
+    "tag": "REGULAR",
+    "description": "A bright encore in white and silver.",
+    "category": "ahyeon"
+  },
+  {
+    "name": "Love Signal",
+    "image": "assets/img-35.webp",
+    "tag": "REGULAR",
+    "description": "Pink details and a playful heart-filled moment.",
+    "category": "ahyeon"
+  },
+  {
+    "name": "Soft Moment",
+    "image": "assets/img-34.webp",
+    "tag": "REGULAR",
+    "description": "A quiet moment in a delicate floral dress.",
+    "category": "ahyeon"
+  },
+  {
+    "name": "Golden",
+    "image": "assets/img-32.webp",
+    "tag": "SECRET",
+    "description": "A golden stage scene with miniature companions.",
+    "category": "ahyeon"
+  },
+  {
+    "name": "Eggyeon",
+    "image": "assets/img-31.webp",
+    "tag": "SUPER SECRET",
+    "description": "A playful surprise surrounded by tiny characters.",
+    "category": "ahyeon"
+  },
+  {
+    "name": "Winter",
+    "image": "assets/aespa-16.webp",
+    "tag": "REGULAR",
+    "description": "A short black hairstyle and layered black stage look.",
+    "category": "aespa"
+  },
+  {
+    "name": "Karina",
+    "image": "assets/aespa-14.webp",
+    "tag": "REGULAR",
+    "description": "A high ponytail, headband and asymmetric black stage outfit.",
+    "category": "aespa"
+  },
+  {
+    "name": "Giselle",
+    "image": "assets/aespa-15.webp",
+    "tag": "REGULAR",
+    "description": "Pink hair and a black stage outfit with metallic details.",
+    "category": "aespa"
+  },
+  {
+    "name": "Ningning",
+    "image": "assets/aespa-13.webp",
+    "tag": "REGULAR",
+    "description": "An updo and a black-and-silver stage look with wide-leg trousers.",
+    "category": "aespa"
+  }
+]
