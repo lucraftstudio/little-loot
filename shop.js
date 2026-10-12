@@ -1,11 +1,12 @@
 const series={ahyeon:{name:'AHYEON',title:'Moments Collection',pack:'assets/img-25.webp',poster:'assets/img-30.webp',set:5,height:'Approx. 10–12 cm, including base',regular:5},aespa:{name:'aespa',title:'WHIPLASH',pack:'assets/aespa-17.webp',poster:'assets/aespa-19.webp',set:4,height:'Approx. 10–12 cm, including base',regular:4},ruka:{name:'RUKA',title:'Street Collection',pack:'assets/ruka-22.webp',poster:'assets/ruka-3.webp',set:6,height:'Height to be confirmed; varies by design',regular:6}};
 const $=s=>document.querySelector(s);let selected=null,busy=false,reveals=[],currentResult=null;
 const unlockKey='little-loot-unlocked-v1';
+// Unlocks belong to the current page visit, matching the reveal shelf.
 let unlocked=new Set();
-try{const saved=JSON.parse(localStorage.getItem(unlockKey)||'[]');if(Array.isArray(saved))unlocked=new Set(saved.filter(v=>typeof v==='string'));}catch{}
+try{localStorage.removeItem(unlockKey);}catch{}
 function productKey(p){return p.category+':'+p.name;}
 function isLocked(p){return p.tag!=='REGULAR'&&!unlocked.has(productKey(p));}
-function unlockProduct(p){unlocked.add(productKey(p));try{localStorage.setItem(unlockKey,JSON.stringify([...unlocked]));}catch{}}
+function unlockProduct(p){unlocked.add(productKey(p));}
 const mysteryPixel='data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
 function randomUnit(){const n=new Uint32Array(1);crypto.getRandomValues(n);return n[0]/4294967296;}
 function pickProduct(category,roll=randomUnit(),regularRoll=randomUnit()){const pool=products.filter(p=>p.category===category),regular=pool.filter(p=>p.tag==='REGULAR');if(category!=='aespa'){if(roll<.10)return pool.find(p=>p.tag==='SUPER SECRET');if(roll<.30)return pool.find(p=>p.tag==='SECRET');}return regular[Math.min(regular.length-1,Math.floor(regularRoll*regular.length))];}
