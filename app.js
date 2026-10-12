@@ -42,7 +42,21 @@ function updateCollection(){
 }
 function setPageBox(format){pageBox=format;const c=collections[category==='all'?'ahyeon':category];toggleButtons('[data-box]','box',format);text('#box-title',format==='set'?(c.boxCount===6?'Six boxes. More moments.':c.count===4?'Four boxes. Four characters.':'Five boxes. More moments.'):'One box. One surprise.');text('#box-description',format==='set'?c.set:`${c.single||'1 random figure, a base and a matching character card'}. ${c.lineup}.`);}
 function openProduct(p){currentProduct=p;const c=collections[p.category];text('#detail-name',p.name);text('#detail-height',c.height||'10–12 cm, including base');text('#detail-tag',p.tag);text('#detail-description',p.description);text('#detail-series',c.name);text('#detail-lineup',c.lineup);text('#detail-edition',p.tag==='REGULAR'?(p.category==='aespa'?'Character design · one of four':p.category==='ruka'?'Regular design · one of six':'Regular design · one of five'):p.tag==='SECRET'?'Secret edition':'Super secret edition');text('#detail-rule-note',c.rule);text('#detail-concept-note',`${c.concept}. Final specifications are to be confirmed. Sizes vary by design; colours and finishes are visual references. Display props and scene backgrounds are not included unless specified.`);setDetailView('figure');setDetailBox('single');dialog.showModal();dialog.scrollTop=0;}
-function setDetailView(view){if(!currentProduct)return;const c=collections[currentProduct.category],cards=view==='cards';document.querySelector('#detail-image').src=cards?currentProduct.card:currentProduct.image;document.querySelector('#detail-image').alt=cards?currentProduct.name+' matching character card':currentProduct.name+' figure design';text('#gallery-caption',cards?currentProduct.name+' · matching character card':'Figure design reference');toggleButtons('[data-detail-view]','detailView',view);}
+let detailView = 'figure';
+function setDetailView(view){
+ if(!currentProduct)return;
+ detailView=view;
+ const cards=view==='cards';
+ const image=document.querySelector('#detail-image');
+ image.src=currentProduct.image;image.alt=currentProduct.name+' figure design';
+ const card=document.querySelector('#detail-card-image');
+ card.src=currentProduct.card;card.alt=currentProduct.name+' matching character card';
+ document.querySelector('.detail-swipe-track').style.transform=cards?'translateX(-100%)':'translateX(0)';
+ text('#gallery-caption',cards?currentProduct.name+' · matching character card':'Figure design reference');
+ text('#detail-page',cards?'2 / 2 · Character card':'1 / 2 · Figure');
+ toggleButtons('[data-detail-view]','detailView',view);
+}
+
 function setDetailBox(format){if(!currentProduct)return;const c=collections[currentProduct.category],whole=format==='set';text('#detail-box-title',whole?(c.boxCount===6?'Six boxes. No duplicate designs.':currentProduct.category==='aespa'?'Four boxes. No repeated characters.':'Five boxes. No duplicate designs.'):'One box. One surprise.');text('#detail-box-description',whole?c.set:`${c.single||'1 random figure, a base and a matching character card'}. ${c.lineup}.`);toggleButtons('[data-detail-box]','detailBox',format);}
 document.querySelector('#category-select').addEventListener('change',e=>{category=e.target.value;filter='all';renderProducts();updateCollection();});
 document.querySelectorAll('[data-filter]').forEach(b=>b.addEventListener('click',()=>{filter=b.dataset.filter;renderProducts();}));
