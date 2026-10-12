@@ -18,7 +18,7 @@
   [...track.children].forEach((slide,i)=>{slide.inert=i!==index;slide.setAttribute('aria-hidden',String(i!==index));});
   document.querySelector('#slide-count').textContent=`${String(index+1).padStart(2,'0')} / ${products.length}`;
  }
- function schedule(){clearInterval(timer);if(!paused&&!hover&&!focused&&!document.hidden&&!document.querySelector('#product-dialog').open&&!document.querySelector('#artwork-dialog').open)timer=setInterval(()=>{index=(index+1)%products.length;render();},5000);}
+ function schedule(){clearInterval(timer);if(!paused&&!hover&&!focused&&!document.hidden&&!document.querySelector('#product-dialog').open)timer=setInterval(()=>{index=(index+1)%products.length;render();},5000);}
  function move(direction){index=(index+direction+products.length)%products.length;render();schedule();}
  document.querySelector('#slide-prev').addEventListener('click',()=>move(-1));
  document.querySelector('#slide-next').addEventListener('click',()=>move(1));
@@ -43,6 +43,6 @@
  document.querySelector('#detail-prev').addEventListener('click',switchGallery);document.querySelector('#detail-next').addEventListener('click',switchGallery);
  gallery.addEventListener('keydown',e=>{if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();switchGallery();}});
  swipe(gallery,switchGallery,switchGallery);
- new MutationObserver(schedule).observe(document.querySelector('#artwork-dialog'),{attributes:true,attributeFilter:['open']});
+ 
  render();pauseLabel();schedule();
 })();

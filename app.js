@@ -58,13 +58,13 @@ function setDetailView(view){
 }
 
 function setDetailBox(format){if(!currentProduct)return;const c=collections[currentProduct.category],whole=format==='set';text('#detail-box-title',whole?(c.boxCount===6?'Six boxes. No duplicate designs.':currentProduct.category==='aespa'?'Four boxes. No repeated characters.':'Five boxes. No duplicate designs.'):'One box. One surprise.');text('#detail-box-description',whole?c.set:`${c.single||'1 random figure, a base and a matching character card'}. ${c.lineup}.`);toggleButtons('[data-detail-box]','detailBox',format);}
-document.querySelector('#category-select').addEventListener('change',e=>{category=e.target.value;filter='all';renderProducts();updateCollection();});
+document.querySelector('#category-select').addEventListener('change',e=>{category=e.target.value;filter='all';renderProducts();});
 document.querySelectorAll('[data-filter]').forEach(b=>b.addEventListener('click',()=>{filter=b.dataset.filter;renderProducts();}));
 document.querySelectorAll('[data-box]').forEach(b=>b.addEventListener('click',()=>setPageBox(b.dataset.box)));
 document.querySelectorAll('[data-detail-box]').forEach(b=>b.addEventListener('click',()=>setDetailBox(b.dataset.detailBox)));
 document.querySelectorAll('[data-detail-view]').forEach(b=>b.addEventListener('click',()=>setDetailView(b.dataset.detailView)));
 document.querySelector('.close').addEventListener('click',()=>dialog.close());
 dialog.addEventListener('click',e=>{if(e.target!==dialog)return;const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close();});
-renderProducts();updateCollection();
+renderProducts();
 
-document.querySelectorAll('[data-category-link]').forEach(link=>link.addEventListener('click',()=>{category=link.dataset.categoryLink;filter='all';document.querySelector('#category-select').value=category;renderProducts();updateCollection();}));
+document.querySelectorAll('[data-category-link]').forEach(link=>link.addEventListener('click',()=>{category=link.dataset.categoryLink;filter='all';document.querySelector('#category-select').value=category;renderProducts();}));
