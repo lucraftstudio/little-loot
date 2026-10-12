@@ -24,3 +24,33 @@
  addEventListener('scroll', () => { if (!queued) { queued = true; requestAnimationFrame(update); } }, {passive:true});
  update();
 })();
+
+// Give each figure a subtle interactive lift without moving the page layout.
+(() => {
+ const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+ const grid = document.querySelector('.grid');
+ const reset = photo => {photo.style.removeProperty('--tilt-x');photo.style.removeProperty('--tilt-y');};
+ grid.addEventListener('pointermove', event => {
+  if (reduced.matches || event.pointerType !== 'mouse') return;
+  const photo = event.target.closest('.photo');
+  if (!photo) return;
+  const box = photo.getBoundingClientRect();
+  photo.style.setProperty('--tilt-x', `${((event.clientY-box.top)/box.height-.5)*-5}deg`);
+  photo.style.setProperty('--tilt-y', `${((event.clientX-box.left)/box.width-.5)*5}deg`);
+ });
+ grid.addEventListener('pointerout', event => {
+  const photo=event.target.closest('.photo');
+  if(photo && !photo.contains(event.relatedTarget)) reset(photo);
+ });
+ const image=document.querySelector('#detail-image');
+ const animateImage = () => {
+  if(reduced.matches || !image.complete || !image.naturalWidth) return;
+  if(image._figureAnimation) image._figureAnimation.cancel();
+  image._figureAnimation=image.animate([
+   {opacity:0,transform:'translateY(15px) scale(.94)'},
+   {opacity:1,transform:'translateY(0) scale(1)'}
+  ],{duration:450,easing:'cubic-bezier(.2,.8,.2,1)'});
+ };
+ image.addEventListener('load',animateImage);
+ new MutationObserver(animateImage).observe(document.querySelector('#product-dialog'),{attributes:true,attributeFilter:['open']});
+})();
