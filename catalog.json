@@ -86,5 +86,69 @@
     "description": "An updo and a black-and-silver stage look with wide-leg trousers.",
     "category": "aespa",
     "card": "assets/card-aespa-ningning.webp"
+  },
+  {
+    "name": "Hot Sauce 01",
+    "image": "assets/ruka-10.webp",
+    "tag": "REGULAR",
+    "description": "Blue jersey, orange shorts and an oversized red beret.",
+    "category": "ruka",
+    "card": "assets/card-ruka-hot-sauce-01.webp"
+  },
+  {
+    "name": "Hot Sauce 02",
+    "image": "assets/ruka-12.webp",
+    "tag": "REGULAR",
+    "description": "A casual jersey look with red details and a relaxed pose.",
+    "category": "ruka",
+    "card": "assets/card-ruka-hot-sauce-02.webp"
+  },
+  {
+    "name": "Drip 01",
+    "image": "assets/ruka-13.webp",
+    "tag": "REGULAR",
+    "description": "A vivid red top and street-style stage outfit.",
+    "category": "ruka",
+    "card": "assets/card-ruka-drip-01.webp"
+  },
+  {
+    "name": "Drip 02",
+    "image": "assets/ruka-14.webp",
+    "tag": "REGULAR",
+    "description": "A yellow jersey and playful double-bun hairstyle.",
+    "category": "ruka",
+    "card": "assets/card-ruka-drip-02.webp"
+  },
+  {
+    "name": "Clik Clak",
+    "image": "assets/ruka-15.webp",
+    "tag": "REGULAR",
+    "description": "An all-black look with sunglasses and street attitude.",
+    "category": "ruka",
+    "card": "assets/card-ruka-clik-clak.webp"
+  },
+  {
+    "name": "Supa Dupa Luv",
+    "image": "assets/ruka-16.webp",
+    "tag": "REGULAR",
+    "description": "Soft blue styling and flowing brown hair.",
+    "category": "ruka",
+    "card": "assets/card-ruka-supa-dupa-luv.webp"
+  },
+  {
+    "name": "Choom",
+    "image": "assets/ruka-17.webp",
+    "tag": "SECRET",
+    "description": "A secret edition with a dark stage look and glasses.",
+    "category": "ruka",
+    "card": "assets/card-ruka-choom.webp"
+  },
+  {
+    "name": "Snack Hideout",
+    "image": "assets/ruka-19.webp",
+    "tag": "SUPER SECRET",
+    "description": "A playful snack-container surprise with a detachable design.",
+    "category": "ruka",
+    "card": "assets/card-ruka-snack-hideout.webp"
   }
 ]
