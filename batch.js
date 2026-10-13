@@ -1,5 +1,6 @@
 // Buying prepares sealed boxes. Opening is a separate action in My boxes.
 let purchasedBoxes=[],nextBoxId=1,chosenPurchasedId=null,autoOpening=false,autoTimer=null,autoIds=[];
+let inventoryVisible=60;
 let purchaseSelections=new Set();
 let autoAdvanceClose=false;
 const candidatePools={};
@@ -9,17 +10,17 @@ function shakeHints(product){return shuffled(products.filter(p=>p.category===pro
 function togglePurchasePick(index){const q=validQuantity($('#box-quantity'),20);if(q===null)return;if(purchaseSelections.has(index))purchaseSelections.delete(index);else if(purchaseSelections.size<q)purchaseSelections.add(index);updatePurchase();}
 function shuffled(values){const result=values.slice();for(let i=result.length-1;i>0;i--){const j=Math.floor(randomUnit()*(i+1));[result[i],result[j]]=[result[j],result[i]];}return result;}
 function makeWholeSet(key,roll=randomUnit()){const pool=products.filter(p=>p.category===key),result=pool.filter(p=>p.tag==='REGULAR');if(key!=='aespa'&&roll<.30)result[Math.floor(randomUnit()*result.length)]=pool.find(p=>p.tag===(roll<.10?'SUPER SECRET':'SECRET'));return shuffled(result);}
-function validQuantity(input,max){const q=Number(input.value);if(!Number.isInteger(q)||q<1||q>max){input.setCustomValidity(`Choose a whole number from 1 to ${max}.`);input.reportValidity();return null;}input.setCustomValidity('');return q;}
+function validQuantity(input,max){const q=Number(input.value);if(!Number.isSafeInteger(q)||q<1){input.setCustomValidity('Choose a positive whole number.');input.reportValidity();return null;}input.setCustomValidity('');return q;}
 function pendingBoxes(){return purchasedBoxes.filter(b=>!b.opened);}
 function setControls(disabled){['draw-series','box-format','box-quantity','pick-mode','prepare-boxes','reset-reveals','auto-inventory'].forEach(id=>$('#'+id).disabled=disabled);document.querySelectorAll('.series-actions button').forEach(b=>b.disabled=disabled);$('#draw-again').disabled=disabled;}
 function renderInventory(){
- const grid=$('#box-grid');grid.replaceChildren();grid.dataset.series='inventory';
+ const grid=$('#box-grid');const savedScroll=grid.scrollLeft;grid.replaceChildren();grid.dataset.series='inventory';
  const pending=pendingBoxes();const summary=$('#inventory-summary');summary.replaceChildren();Object.entries(series).forEach(([key,s])=>{const all=purchasedBoxes.filter(b=>b.key===key);if(all.length)summary.append(make('span','',`${s.name} · 已买 ${all.length} / 剩余 ${all.filter(b=>!b.opened).length}`));});$('#unbox').hidden=purchasedBoxes.length===0;
  $('#batch-progress').textContent=`已买 ${purchasedBoxes.length} 盒 · 已开 ${purchasedBoxes.length-pending.length} 盒 · 剩余 ${pending.length} 盒`;
  if(!pending.length){grid.append(make('p','inventory-empty',purchasedBoxes.length?'All your boxes are open. Buy more whenever you like.':'No purchased boxes yet. Choose a series to buy boxes.'));}
- pending.forEach(box=>{const button=make('button','sealed-box');button.dataset.boxId=String(box.id);button.classList.toggle('selected',chosenPurchasedId===box.id);button.disabled=busy||autoOpening;button.setAttribute('aria-label',series[box.key].name+' purchased box '+box.id);button.setAttribute('aria-pressed',String(chosenPurchasedId===box.id));const image=make('img','designed-box-image');image.src=`assets/box-${box.key}.webp`;image.alt=series[box.key].name+' unopened box';button.append(image,make('span','box-number',series[box.key].name+' · BOX '+box.id),make('small','inventory-origin',box.origin));button.addEventListener('click',()=>{if(busy||autoOpening)return;chosenPurchasedId=box.id;renderInventory();$('#draw-status').textContent='Box '+box.id+' selected. Open it now or leave it sealed.';});grid.append(button);});
- $('#open-box').disabled=busy||autoOpening||!pending.some(b=>b.id===chosenPurchasedId);
- $('#open-box').textContent=chosenPurchasedId?'OPEN SELECTED BOX':'SELECT A PURCHASED BOX';$('#auto-inventory').disabled=busy||autoOpening||pending.length===0;$('#auto-inventory').textContent=`自动打开剩余 ${pending.length} 盒`;
+ pending.slice(0,inventoryVisible).forEach(box=>{const button=make('button','sealed-box');button.dataset.boxId=String(box.id);button.classList.toggle('selected',chosenPurchasedId===box.id);button.disabled=busy||autoOpening;button.setAttribute('aria-label',series[box.key].name+' purchased box '+box.id);button.setAttribute('aria-pressed',String(chosenPurchasedId===box.id));const image=make('img','designed-box-image');image.src=`assets/box-${box.key}.webp`;image.alt=series[box.key].name+' unopened box';button.append(image,make('span','box-number',series[box.key].name+' · BOX '+box.id),make('small','inventory-origin',box.origin));button.addEventListener('click',()=>{if(busy||autoOpening)return;chosenPurchasedId=box.id;renderInventory();$('#draw-status').textContent='Box '+box.id+' selected. Open it now or leave it sealed.';});grid.append(button);});
+ $('#more-inventory').hidden=pending.length<=inventoryVisible;$('#open-box').disabled=busy||autoOpening||!pending.some(b=>b.id===chosenPurchasedId);
+ grid.scrollLeft=savedScroll;$('#open-box').textContent=chosenPurchasedId?'OPEN SELECTED BOX':'SELECT A PURCHASED BOX';$('#auto-inventory').disabled=busy||autoOpening||pending.length===0;$('#auto-inventory').textContent=`自动打开剩余 ${pending.length} 盒`;
 }
 // shop.js uses resetBoxes; after initialization it now refreshes purchased inventory.
 resetBoxes=function(){if(!busy){chosenPurchasedId=null;renderInventory();}};
@@ -31,7 +32,7 @@ function updatePurchase(){
  $('#format-description').textContent=whole?`${s.set} boxes per set. Buying adds sealed boxes to My boxes; you decide when to open them.`:'Buying adds sealed boxes to My boxes. The figure stays unknown until you open it.';
  $('#format-image').src=whole?`assets/set-${key}.webp`:`assets/box-${key}.webp`;
  $('#pick-mode-row').hidden=whole;$('#quantity-label').textContent=whole?'Quantity (whole sets)':'Quantity (single boxes)';
- const max=whole?5:20;$('#box-quantity').max=String(max);if(Number($('#box-quantity').value)>max)$('#box-quantity').value=String(max);
+ const max=Infinity;$('#box-quantity').removeAttribute('max');
  $('#purchase-picks').hidden=!manual;const grid=$('#purchase-pick-grid');const oldScroll=grid.scrollLeft;grid.replaceChildren();
  if(manual){
   const pool=candidatesFor(key);
@@ -121,3 +122,9 @@ $('#refresh-pick-boxes').addEventListener('click',()=>{
  addCandidates(key,24);updatePurchase();$('#purchase-pick-grid').scrollLeft=0;
  $('#purchase-pick-status').textContent='已换新一批：24 盒。已买盒子和解锁记录保留。';
 });
+
+function enableDragRail(rail){let drag=null,suppress=false;rail.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'&&e.button===0)drag={x:e.clientX,scroll:rail.scrollLeft,moved:false};});window.addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-drag.x;if(Math.abs(dx)>6)drag.moved=true;if(drag.moved){e.preventDefault();rail.classList.add('mouse-dragging');rail.scrollLeft=drag.scroll-dx;}},{passive:false});window.addEventListener('pointerup',()=>{if(!drag)return;suppress=drag.moved;drag=null;rail.classList.remove('mouse-dragging');setTimeout(()=>suppress=false,0);});window.addEventListener('pointercancel',()=>{drag=null;rail.classList.remove('mouse-dragging');});rail.addEventListener('click',e=>{if(suppress){e.preventDefault();e.stopImmediatePropagation();}},true);rail.addEventListener('dragstart',e=>e.preventDefault());}
+enableDragRail($('#box-grid'));
+$('#inventory-prev').addEventListener('click',()=>$('#box-grid').scrollBy({left:-600,behavior:reduced.matches?'auto':'smooth'}));
+$('#inventory-next').addEventListener('click',()=>$('#box-grid').scrollBy({left:600,behavior:reduced.matches?'auto':'smooth'}));
+$('#more-inventory').addEventListener('click',()=>{inventoryVisible+=60;renderInventory();});
