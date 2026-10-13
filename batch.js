@@ -4,7 +4,7 @@ let purchaseSelections=new Set();
 const candidatePools={};
 function candidatesFor(key){if(!candidatePools[key])candidatePools[key]=[];if(!candidatePools[key].length)addCandidates(key,24);return candidatePools[key];}
 function addCandidates(key,count){const pool=candidatePools[key]||(candidatePools[key]=[]);for(let i=0;i<count;i++)pool.push({product:pickProduct(key),hints:null,sold:false});}
-function shakeHints(product){return shuffled(products.filter(p=>p.category===product.category&&p.tag==='REGULAR'&&p.name!==product.name)).slice(0,2).map(p=>p.name);}
+function shakeHints(product){return shuffled(products.filter(p=>p.category===product.category&&p.name!==product.name)).slice(0,2).map(p=>p.name);}
 function togglePurchasePick(index){const q=validQuantity($('#box-quantity'),20);if(q===null)return;if(purchaseSelections.has(index))purchaseSelections.delete(index);else if(purchaseSelections.size<q)purchaseSelections.add(index);updatePurchase();}
 function shuffled(values){const result=values.slice();for(let i=result.length-1;i>0;i--){const j=Math.floor(randomUnit()*(i+1));[result[i],result[j]]=[result[j],result[i]];}return result;}
 function makeWholeSet(key,roll=randomUnit()){const pool=products.filter(p=>p.category===key),result=pool.filter(p=>p.tag==='REGULAR');if(key!=='aespa'&&roll<.30)result[Math.floor(randomUnit()*result.length)]=pool.find(p=>p.tag===(roll<.10?'SUPER SECRET':'SECRET'));return shuffled(result);}
@@ -40,12 +40,12 @@ function updatePurchase(){
    const image=make('img');image.src=`assets/box-${key}.webp`;image.alt=series[key].name+' sealed box '+(i+1);
    button.append(image,make('span','',candidate.sold?'PURCHASED':'BOX '+(i+1)));button.addEventListener('click',()=>togglePurchasePick(i));
    const shake=make('button','shake-button','摇一摇 · SHAKE');shake.disabled=candidate.sold;
-   const hint=make('p','shake-hints',candidate.hints?'不包含：'+candidate.hints.join(' / '):'摇一摇，排除两个普通款式');
+   const hint=make('div','shake-hints');paintShakeHint(hint,candidate,key);
    shake.addEventListener('click',()=>{
     if(candidate.sold||shake.disabled)return;
-    if(candidate.hints){hint.textContent='不包含：'+candidate.hints.join(' / ');return;}
+    if(candidate.hints){paintShakeHint(hint,candidate,key);return;}
     shake.disabled=true;card.classList.add('shaking');hint.textContent='听听里面的声音…';
-    setTimeout(()=>{candidate.hints=shakeHints(candidate.product);hint.textContent='不包含：'+candidate.hints.join(' / ');card.classList.remove('shaking');shake.disabled=false;},reduced.matches?0:800);
+    setTimeout(()=>{candidate.hints=shakeHints(candidate.product);paintShakeHint(hint,candidate,key);card.classList.remove('shaking');shake.disabled=false;},reduced.matches?0:800);
    });
    card.append(button,shake,hint);grid.append(card);
   });
@@ -90,3 +90,24 @@ renderInventory();updatePurchase();
 $('#pick-scroll-prev').addEventListener('click',()=>$('#purchase-pick-grid').scrollBy({left:-450,behavior:reduced.matches?'auto':'smooth'}));
 $('#pick-scroll-next').addEventListener('click',()=>$('#purchase-pick-grid').scrollBy({left:450,behavior:reduced.matches?'auto':'smooth'}));
 $('#more-pick-boxes').addEventListener('click',()=>{addCandidates($('#draw-series').value,24);const grid=$('#purchase-pick-grid'),oldWidth=grid.scrollWidth;updatePurchase();grid.scrollTo({left:oldWidth,behavior:reduced.matches?'auto':'smooth'});});
+
+function paintShakeHint(container,candidate,key){
+ container.replaceChildren();
+ if(!candidate.hints){container.append(make('p','hint-empty','摇一摇，排除两款'));return;}
+ container.append(make('p','hint-label','不在这盒里 / NOT INSIDE'));
+ const row=make('div','hint-photos');
+ candidate.hints.forEach(name=>{
+  const p=products.find(p=>p.category===key&&p.name===name),secret=p.tag==='SUPER SECRET'&&isLocked(p);
+  const tile=make('div','hint-figure'+(secret?' hint-mystery':''));const image=make('img');image.src=secret?mysteryPixel:p.image;image.alt=secret?'Super secret mystery design':p.name;tile.append(image);
+  tile.append(make('span','hint-cross','×'),make('small','',secret?'SUPER SECRET':p.name));row.append(tile);
+ });container.append(row);
+}
+(() => {
+ const rail=$('#purchase-pick-grid');let drag=null,suppressClick=false;
+ rail.addEventListener('pointerdown',e=>{if(e.pointerType!=='mouse'||e.button!==0)return;drag={x:e.clientX,scroll:rail.scrollLeft,moved:false};});
+ window.addEventListener('pointermove',e=>{if(!drag)return;const distance=e.clientX-drag.x;if(Math.abs(distance)>6)drag.moved=true;if(!drag.moved)return;e.preventDefault();rail.classList.add('mouse-dragging');rail.scrollLeft=drag.scroll-distance;},{passive:false});
+ window.addEventListener('pointerup',()=>{if(!drag)return;suppressClick=drag.moved;drag=null;rail.classList.remove('mouse-dragging');setTimeout(()=>{suppressClick=false;},0);});
+ window.addEventListener('pointercancel',()=>{drag=null;rail.classList.remove('mouse-dragging');});
+ rail.addEventListener('click',e=>{if(suppressClick){e.preventDefault();e.stopImmediatePropagation();}},true);
+ rail.addEventListener('dragstart',e=>e.preventDefault());
+})();
