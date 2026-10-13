@@ -1,95 +1,66 @@
-// A session contains exactly the selected number of boxes or complete sets.
-let openingQueue=[],sessionTotal=0,autoOpening=false,autoTimer=null,batchActive=false,sessionKey=null;
+// Buying prepares sealed boxes. Opening is a separate action in My boxes.
+let purchasedBoxes=[],nextBoxId=1,chosenPurchasedId=null,autoOpening=false,autoTimer=null,autoIds=[];
+let purchaseSelections=new Set();
 function shuffled(values){const result=values.slice();for(let i=result.length-1;i>0;i--){const j=Math.floor(randomUnit()*(i+1));[result[i],result[j]]=[result[j],result[i]];}return result;}
-function makeWholeSet(key,roll=randomUnit()){
- const pool=products.filter(p=>p.category===key),regular=pool.filter(p=>p.tag==='REGULAR');
- const result=regular.slice();
- if(key!=='aespa'&&roll<.30){const rare=pool.find(p=>p.tag===(roll<.10?'SUPER SECRET':'SECRET'));result[Math.floor(randomUnit()*result.length)]=rare;}
- return shuffled(result);
+function makeWholeSet(key,roll=randomUnit()){const pool=products.filter(p=>p.category===key),result=pool.filter(p=>p.tag==='REGULAR');if(key!=='aespa'&&roll<.30)result[Math.floor(randomUnit()*result.length)]=pool.find(p=>p.tag===(roll<.10?'SUPER SECRET':'SECRET'));return shuffled(result);}
+function validQuantity(input,max){const q=Number(input.value);if(!Number.isInteger(q)||q<1||q>max){input.setCustomValidity(`Choose a whole number from 1 to ${max}.`);input.reportValidity();return null;}input.setCustomValidity('');return q;}
+function pendingBoxes(){return purchasedBoxes.filter(b=>!b.opened);}
+function setControls(disabled){['draw-series','box-format','box-quantity','pick-mode','prepare-boxes','mini-game','reset-reveals','game-launch'].forEach(id=>$('#'+id).disabled=disabled);document.querySelectorAll('.series-actions button').forEach(b=>b.disabled=disabled);$('#draw-again').disabled=disabled;}
+function renderInventory(){
+ const grid=$('#box-grid');grid.replaceChildren();grid.dataset.series='inventory';
+ const pending=pendingBoxes();const summary=$('#inventory-summary');summary.replaceChildren();Object.entries(series).forEach(([key,s])=>{const all=purchasedBoxes.filter(b=>b.key===key);if(all.length)summary.append(make('span','',`${s.name} · 已买 ${all.length} / 剩余 ${all.filter(b=>!b.opened).length}`));});$('#unbox').hidden=purchasedBoxes.length===0;
+ $('#batch-progress').textContent=`已买 ${purchasedBoxes.length} 盒 · 已开 ${purchasedBoxes.length-pending.length} 盒 · 剩余 ${pending.length} 盒`;
+ if(!pending.length){grid.append(make('p','inventory-empty',purchasedBoxes.length?'All your boxes are open. Buy more whenever you like.':'No purchased boxes yet. Choose a series to buy boxes.'));}
+ pending.forEach(box=>{const button=make('button','sealed-box');button.classList.toggle('selected',chosenPurchasedId===box.id);button.disabled=busy||autoOpening;button.setAttribute('aria-label',series[box.key].name+' purchased box '+box.id);button.setAttribute('aria-pressed',String(chosenPurchasedId===box.id));const image=make('img','designed-box-image');image.src=`assets/box-${box.key}.webp`;image.alt=series[box.key].name+' unopened box';button.append(image,make('span','box-number',series[box.key].name+' · BOX '+box.id),make('small','inventory-origin',box.origin));button.addEventListener('click',()=>{if(busy||autoOpening)return;chosenPurchasedId=box.id;renderInventory();$('#draw-status').textContent='Box '+box.id+' selected. Open it now or leave it sealed.';});grid.append(button);});
+ $('#open-box').disabled=busy||autoOpening||!pending.some(b=>b.id===chosenPurchasedId);
+ $('#open-box').textContent=chosenPurchasedId?'OPEN SELECTED BOX':'SELECT A PURCHASED BOX';
 }
-function validQuantity(input,max){const value=Number(input.value);if(!Number.isInteger(value)||value<1||value>max){input.setCustomValidity(`Enter a whole number from 1 to ${max}.`);input.reportValidity();return null;}input.setCustomValidity('');return value;}
-const originalResetBoxes=resetBoxes;
-resetBoxes=function(){if(sessionKey&&sessionKey!==$('#draw-series').value){openingQueue=[];sessionTotal=0;sessionKey=null;}originalResetBoxes();if($('#box-format').value==='set'){const grid=$('#box-grid');while(grid.children.length>series[$('#draw-series').value].set)grid.lastElementChild.remove();}updateBatchButton();};
-function updateBatchButton(){
- if(busy)return;
- const mode=$('#pick-mode').value,format=$('#box-format').value;
- const canOpen=openingQueue.length>0&&(mode==='random'||format==='set'||selected!==null);
- $('#open-box').disabled=!canOpen;
- $('#open-box').textContent=openingQueue.length?canOpen?'OPEN NEXT BOX':'SELECT A BOX TO OPEN':'PREPARE BOXES FIRST';
- $('#batch-progress').textContent=sessionTotal?`剩余 ${openingQueue.length} 盒 · 已开 ${sessionTotal-openingQueue.length} / ${sessionTotal}`:'Choose format and quantity, then prepare your boxes.';
-}
-function showFormat(){
- const key=$('#draw-series').value,s=series[key],whole=$('#box-format').value==='set';
+// shop.js uses resetBoxes; after initialization it now refreshes purchased inventory.
+resetBoxes=function(){if(!busy){chosenPurchasedId=null;renderInventory();}};
+function updatePurchase(){
+ const key=$('#draw-series').value,s=series[key],whole=$('#box-format').value==='set',manual=!whole&&$('#pick-mode').value==='manual';
+ $('#single-format-image').src=`assets/box-${key}.webp`;$('#set-format-image').src=`assets/set-${key}.webp`;
+ $('#single-format-image').alt=s.name+' single box';$('#set-format-image').alt=s.name+' whole set';$('#set-format-count').textContent=s.set+' boxes · no duplicates';$('#purchase-title').textContent=s.name+' · Buy Boxes';
+ $('#choose-single').classList.toggle('active',!whole);$('#choose-set').classList.toggle('active',whole);$('#choose-single').setAttribute('aria-pressed',String(!whole));$('#choose-set').setAttribute('aria-pressed',String(whole));
+ $('#format-description').textContent=whole?`${s.set} boxes per set. Buying adds sealed boxes to My boxes; you decide when to open them.`:'Buying adds sealed boxes to My boxes. The figure stays unknown until you open it.';
  $('#format-image').src=whole?`assets/set-${key}.webp`:`assets/box-${key}.webp`;
- $('#format-image').alt=s.name+(whole?' whole set packaging':' single box packaging');
- $('#quantity-label').textContent=whole?'3. Quantity (whole sets)':'3. Quantity (single boxes)';
- $('#box-quantity').max=whole?'5':'20';
- if(Number($('#box-quantity').value)>Number($('#box-quantity').max))$('#box-quantity').value='1';
- $('#format-description').textContent=whole?`${s.set} boxes per set · no duplicates within each set.${key==='aespa'?' All 4 characters.':' A rare design can replace one regular design.'}`:'One random figure + base + matching card per box. Single-box results may repeat.';
- $('#pick-mode-row').hidden=whole;
- const note=document.querySelector('.odds>p');note.textContent=whole?'Demo odds per whole set: 70% all regular designs, 20% one secret replacement, 10% one super secret replacement (aespa contains its 4 regular characters). Hidden editions are not guaranteed.':'Demo odds per single box: regular 70%, secret 20%, super secret 10%; aespa each 25%. Each box is independent; results can repeat.';
+ $('#pick-mode-row').hidden=whole;$('#quantity-label').textContent=whole?'Quantity (whole sets)':'Quantity (single boxes)';
+ const max=whole?5:manual?products.filter(p=>p.category===key).length:20;$('#box-quantity').max=String(max);if(Number($('#box-quantity').value)>max)$('#box-quantity').value=String(max);
+ $('#purchase-picks').hidden=!manual;const grid=$('#purchase-pick-grid');grid.replaceChildren();
+ if(manual){const count=products.filter(p=>p.category===key).length;for(let i=0;i<count;i++){const button=make('button','purchase-pick');button.classList.toggle('selected',purchaseSelections.has(i));button.setAttribute('aria-pressed',String(purchaseSelections.has(i)));const image=make('img');image.src=`assets/box-${key}.webp`;image.alt=s.name+' sealed box '+(i+1);button.append(image,make('span','','BOX '+(i+1)));button.addEventListener('click',()=>{const q=validQuantity($('#box-quantity'),max);if(q===null)return;if(purchaseSelections.has(i))purchaseSelections.delete(i);else if(purchaseSelections.size<q)purchaseSelections.add(i);updatePurchase();});grid.append(button);}}
+ $('#purchase-pick-status').textContent=`已选 ${purchaseSelections.size} / ${$('#box-quantity').value} 盒 · contents remain a mystery`;
+ const total=whole?Number($('#box-quantity').value)*s.set:Number($('#box-quantity').value);$('#prepare-boxes').textContent=`BUY · ADD ${total} SEALED BOXES`;
+ $('#odds-list').innerHTML=key==='aespa'?'<div><span>Each character</span><b>25%</b></div>':'<div><span>Regular</span><b>70%</b></div><div><span>Secret</span><b>20%</b></div><div><span>Super secret</span><b>10%</b></div>';
+ $('.odds>p').textContent=whole?'Demo per-set odds: 70% all regular; 20% one secret replaces a regular; 10% one super secret replaces a regular. No duplicates within each set. aespa contains all 4 characters.':'Free simulated single-box odds. Boxes are independent and may repeat. Buying does not reveal the figure.';
 }
-function clearSession(){if(busy||autoOpening)return;openingQueue=[];sessionTotal=0;batchActive=false;selected=null;resetBoxes();showFormat();}
-function setControls(disabled){['draw-series','box-format','box-quantity','pick-mode','prepare-boxes','mini-game','reset-reveals'].forEach(id=>$('#'+id).disabled=disabled);$('#draw-again').disabled=disabled;document.querySelectorAll('.series-actions button').forEach(b=>b.disabled=disabled);}
-function prepareSession(){
- if(busy||autoOpening)return false;
- const whole=$('#box-format').value==='set',q=validQuantity($('#box-quantity'),whole?5:20);if(q===null)return false;
- const key=$('#draw-series').value;sessionKey=key;openingQueue=[];
- for(let i=0;i<q;i++){if(whole)openingQueue.push(...makeWholeSet(key));else openingQueue.push(pickProduct(key));}
- sessionTotal=openingQueue.length;batchActive=true;selected=null;resetBoxes();showFormat();
- $('#draw-status').textContent=`Ready: ${q} ${whole?'whole set(s)':'single box(es)'} · ${sessionTotal} boxes to open.`;
- return true;
+function openPurchase(key){if(busy||autoOpening)return;$('#draw-series').value=key;$('#box-format').value='single';$('#box-quantity').value='1';$('#pick-mode').value='random';purchaseSelections.clear();updatePurchase();$('#purchase-dialog').showModal();}
+function addPurchased(key,format,q,mode,picks=[]){
+ const ids=[];
+ for(let unit=0;unit<q;unit++){
+  const results=format==='set'?makeWholeSet(key):[pickProduct(key)];
+  results.forEach(product=>{const box={id:nextBoxId++,key,product,opened:false,origin:format==='set'?'Whole set '+(unit+1):mode==='manual'?'Picked box '+(picks[unit]+1):'Random pick'};purchasedBoxes.push(box);ids.push(box.id);});
+ }
+ return ids;
 }
-function finishAuto(){autoOpening=false;clearTimeout(autoTimer);$('#stop-auto').hidden=true;setControls(false);updateBatchButton();}
-function openNext(){
- if(busy||!openingQueue.length)return;
- if(!autoOpening&&$('#box-format').value==='single'&&$('#pick-mode').value==='manual'&&selected===null)return;
- busy=true;setControls(true);$('#open-box').disabled=true;
- const boxes=$('#box-grid').querySelectorAll('button');boxes.forEach(b=>b.disabled=true);
- const chosen=selected===null?Math.floor(randomUnit()*boxes.length):selected;boxes[chosen]?.classList.add('opening');
- $('#draw-status').textContent='Opening…';
- setTimeout(()=>{
-  const p=openingQueue.shift();currentResult=p;reveals.unshift(p);unlockProduct(p);fillResult(p,true);renderShelf();$('#result-dialog').showModal();playRareReveal(p);
-  busy=false;selected=null;resetBoxes();$('#stop-auto').hidden=!autoOpening;
-  if(autoOpening){setControls(true);autoTimer=setTimeout(()=>{if(!autoOpening)return;if(!openingQueue.length){finishAuto();$('#draw-status').textContent='Auto unboxing complete.';return;}$('#result-dialog').close();openNext();},reduced.matches?1200:p.tag==='REGULAR'?1800:6500);}
-  else{setControls(false);updateBatchButton();$('#draw-status').textContent=openingQueue.length?'Close the reveal and open your next box.':'All selected boxes opened. Prepare a new session to continue.';}
+$('#prepare-boxes').addEventListener('click',()=>{if(busy||autoOpening)return;const key=$('#draw-series').value,format=$('#box-format').value,mode=$('#pick-mode').value;const max=Number($('#box-quantity').max),q=validQuantity($('#box-quantity'),max);if(q===null)return;if(format==='single'&&mode==='manual'&&purchaseSelections.size!==q){$('#purchase-pick-status').textContent=`Please select exactly ${q} sealed box(es).`;return;}addPurchased(key,format,q,mode,[...purchaseSelections]);$('#purchase-dialog').close();chosenPurchasedId=null;renderInventory();$('#draw-status').textContent='Boxes added. You can leave them sealed or select one to open.';$('#unbox').scrollIntoView({behavior:reduced.matches?'auto':'smooth'});});
+['draw-series','box-format','box-quantity','pick-mode'].forEach(id=>$('#'+id).addEventListener('change',()=>{purchaseSelections.clear();updatePurchase();}));
+$('#choose-single').addEventListener('click',()=>{$('#box-format').value='single';purchaseSelections.clear();updatePurchase();});$('#choose-set').addEventListener('click',()=>{$('#box-format').value='set';purchaseSelections.clear();updatePurchase();});
+$('#purchase-close').addEventListener('click',()=>$('#purchase-dialog').close());
+function finishAuto(){autoOpening=false;clearTimeout(autoTimer);autoIds=[];$('#stop-auto').hidden=true;setControls(false);renderInventory();}
+function openPurchased(id){
+ const box=purchasedBoxes.find(b=>b.id===id&&!b.opened);if(!box||busy)return;
+ busy=true;setControls(true);$('#open-box').disabled=true;$('#box-grid').querySelectorAll('button').forEach(b=>b.disabled=true);$('#draw-status').textContent='Opening box '+box.id+'…';
+ setTimeout(()=>{box.opened=true;currentResult=box.product;reveals.unshift(box.product);unlockProduct(box.product);fillResult(box.product,true);renderShelf();$('#result-dialog').showModal();playRareReveal(box.product);busy=false;chosenPurchasedId=null;renderInventory();$('#stop-auto').hidden=!autoOpening;
+ if(autoOpening){setControls(true);autoTimer=setTimeout(()=>{if(!autoOpening)return;if(!autoIds.length){finishAuto();$('#draw-status').textContent='Mini game complete.';return;}const next=autoIds.shift();$('#result-dialog').close();openPurchased(next);},reduced.matches?1200:box.product.tag==='REGULAR'?1800:6500);}else{setControls(false);$('#draw-status').textContent='Box revealed. Your other purchased boxes remain sealed.';}
  },reduced.matches?0:1300);
 }
-$('#prepare-boxes').addEventListener('click',()=>{if(prepareSession()){$('#purchase-dialog').close();$('#unbox').hidden=false;$('#unbox').scrollIntoView({behavior:reduced.matches?'auto':'smooth'});}});
-$('#open-box').addEventListener('click',openNext);
-// Selection listeners in shop.js run first, then the session limit is enforced.
-$('#box-grid').addEventListener('click',updateBatchButton);
-['draw-series','box-format','box-quantity','pick-mode'].forEach(id=>$('#'+id).addEventListener('change',clearSession));
-$('#reset-reveals').addEventListener('click',()=>{if(busy)return;finishAuto();openingQueue=[];sessionTotal=0;batchActive=false;resetBoxes();showFormat();$('#unbox').hidden=true;});
-$('#mini-game').addEventListener('click',()=>{$('#purchase-dialog').close();$('#game-series').value=$('#draw-series').value;$('#game-dialog').showModal();});
-$('#start-game').addEventListener('click',()=>{const q=validQuantity($('#game-quantity'),20);if(q===null)return;$('#game-dialog').close();$('#draw-series').value=$('#game-series').value;$('#box-format').value='single';$('#pick-mode').value='random';$('#box-quantity').value=String(q);if(!prepareSession())return;$('#unbox').hidden=false;$('#unbox').scrollIntoView({behavior:reduced.matches?'auto':'smooth'});autoOpening=true;$('#stop-auto').hidden=false;openNext();});
-$('#stop-auto').addEventListener('click',()=>{finishAuto();$('#draw-status').textContent=`Auto opening stopped. ${openingQueue.length} prepared boxes remain.`;});
-// Escape/close stops auto playback; manually closing a result never consumes another box.
-$('#result-dialog').addEventListener('close',()=>{if(autoOpening&& !busy){finishAuto();}});
-showFormat();updateBatchButton();
+$('#open-box').addEventListener('click',()=>{if(!autoOpening)openPurchased(chosenPurchasedId);});
+$('#reset-reveals').addEventListener('click',()=>{if(busy)return;finishAuto();purchasedBoxes=[];nextBoxId=1;chosenPurchasedId=null;renderInventory();});
+function launchGame(){if(busy||autoOpening)return;$('#purchase-dialog').close();$('#game-series').value=$('#draw-series').value;$('#game-dialog').showModal();}
+$('#mini-game').addEventListener('click',launchGame);$('#game-launch').addEventListener('click',launchGame);
+$('#start-game').addEventListener('click',()=>{const q=validQuantity($('#game-quantity'),20);if(q===null)return;$('#game-dialog').close();autoIds=addPurchased($('#game-series').value,'single',q,'random');autoOpening=true;renderInventory();$('#stop-auto').hidden=false;openPurchased(autoIds.shift());});
+$('#stop-auto').addEventListener('click',()=>{finishAuto();$('#draw-status').textContent='Stopped. Remaining mini-game boxes stay sealed in My boxes.';});
+$('#result-dialog').addEventListener('close',()=>{if(autoOpening&&!busy)finishAuto();});
+['purchase-dialog','game-dialog'].forEach(id=>{const d=$('#'+id);d.addEventListener('click',e=>{if(e.target!==d)return;const r=d.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)d.close();});});
 $('#game-dialog .close').addEventListener('click',()=>$('#game-dialog').close());
-$('#game-dialog').addEventListener('click',e=>{if(e.target!==e.currentTarget)return;const r=e.currentTarget.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)e.currentTarget.close();});
-
-function updatePurchasePhotos(){
- const key=$('#draw-series').value,whole=$('#box-format').value==='set';
- $('#single-format-image').src=`assets/box-${key}.webp`;
- $('#set-format-image').src=`assets/set-${key}.webp`;
- $('#single-format-image').alt=series[key].name+' single box';
- $('#set-format-image').alt=series[key].name+' whole set';
- $('#set-format-count').textContent=series[key].set+' sealed boxes · no duplicates';
- $('#choose-single').classList.toggle('active',!whole);$('#choose-set').classList.toggle('active',whole);
- $('#choose-single').setAttribute('aria-pressed',String(!whole));$('#choose-set').setAttribute('aria-pressed',String(whole));
- $('#purchase-title').textContent=series[key].name+' · Buy Boxes';
-}
-function openPurchase(key){
- if(busy||autoOpening)return;
- if(openingQueue.length){$('#unbox').hidden=false;$('#unbox').scrollIntoView({behavior:reduced.matches?'auto':'smooth'});$('#draw-status').textContent='Finish your remaining boxes before preparing a new session.';return;}
- $('#draw-series').value=key;$('#box-format').value='single';$('#box-quantity').value='1';$('#pick-mode').value='manual';clearSession();updatePurchasePhotos();$('#purchase-dialog').showModal();
-}
-$('#purchase-close').addEventListener('click',()=>$('#purchase-dialog').close());
-['draw-series','box-format'].forEach(id=>$('#'+id).addEventListener('change',updatePurchasePhotos));
-$('#choose-single').addEventListener('click',()=>{$('#box-format').value='single';clearSession();updatePurchasePhotos();});
-$('#choose-set').addEventListener('click',()=>{$('#box-format').value='set';clearSession();updatePurchasePhotos();});
-$('#game-launch').addEventListener('click',()=>{if(busy||autoOpening)return;if(openingQueue.length){$('#unbox').scrollIntoView({behavior:'smooth'});$('#draw-status').textContent='Finish or Reset the current session before starting the mini game.';return;}$('#game-series').value=$('#draw-series').value;$('#game-dialog').showModal();});
-$('#purchase-dialog').addEventListener('click',e=>{if(e.target!==e.currentTarget)return;const r=e.currentTarget.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)e.currentTarget.close();});
-updatePurchasePhotos();
+renderInventory();updatePurchase();
