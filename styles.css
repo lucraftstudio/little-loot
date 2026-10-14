@@ -85,3 +85,34 @@ button:focus-visible,a:focus-visible,select:focus-visible{outline-color:#af8a53}
 .wide-home .hero-poster .campaign-text{background:linear-gradient(180deg,transparent 0%,#15120f99 28%,#15120fe8 70%,#15120ff5 100%)!important;padding-top:85px}
 .wide-home .hero-poster .campaign-text .primary{background:#eedfc7!important;color:#2e271e!important}
 }
+
+/* Explicit text/surface pairs for the champagne theme, including interaction states. */
+.wide-home .poster-controls button{background:#403a31;color:#fff6e8!important}
+.wide-home .poster-controls button:hover{background:#62523d}
+.editorial-heading>p:not(.kicker),.editorial-figure small,.logo small,.section-title>span,footer p{color:#625b50}
+.series-copy>p,.section-title>p,.series-intro p,.result-copy p,.fine,.odds>p,.purchase-note,.purchase-format span,.draw-settings #format-description,#purchase-pick-status{color:#625b50}
+.result-copy p:first-child,.lineup-item small,.shelf-item small,.odds summary,.odds b{color:#77572b}
+.odds{background:#f4efe6;border-color:#d5c8b5;color:#29251f}.odds div>div{border-color:#d5c8b5}
+.image-controls button{background:#fffdf9;color:#403526;border-color:#caba9f}.image-controls button.active{background:#242321;color:#fffaf1}
+.shake-card,.purchase-pick{background:#fffdf9;color:#29251f;border-color:#d7cbb9}
+.shake-card.selected,.purchase-pick.selected{background:#f0e5d2;color:#29251f;border-color:#9c7b48}
+.shake-card .purchase-pick,.purchase-pick span,.shake-hints,.hint-label,.hint-empty,.hint-figure small{color:#62503a}
+#refresh-pick-boxes{background:#eee2cc;color:#49371f;border-color:#a88b5e}
+.purchase-format{background:#f1ece3;color:#29251f;border-color:#d7cbb9}.purchase-format.active{color:#29251f}.purchase-format.active::after{background:#77572b;color:#fffaf1}
+.unbox-section{color:#fffaf1}.unbox-section h2,.draw-stage h3{color:#fffaf1}
+.unbox-section .kicker{color:#ead8b9}.unbox-section .demo-badge{background:#302e2a;color:#ead8b9;border-color:#8d7b5f}
+.draw-stage .stage-label{background:#514432;color:#fff0d5}
+.draw-stage .stage-heading>p,.draw-stage>p,.inventory-auto span,.inventory-rail-controls span{color:#ddd1bc}
+.inventory-summary{background:transparent;border:0}.inventory-summary span{background:#40392f;color:#fff1dc;border-color:#8d7b5f}
+.batch-progress,#batch-progress{background:#40392f;color:#fff1dc;border-color:#8d7b5f}
+.inventory-empty{background:#40392f;color:#fff1dc}
+.box-grid .sealed-box{background:#fffdf9;color:#29251f;border-color:#d7cbb9}
+.box-grid .sealed-box.selected{background:#f0e5d2;color:#29251f;border-color:#c7a26a}
+.box-grid .sealed-box .box-number{background:#eee5d7;color:#49371f}
+.box-grid .sealed-box.selected .box-number{background:#77572b;color:#fffaf1}
+.box-grid .sealed-box .inventory-origin,.box-grid .sealed-box small{color:#62503a}
+.box-grid .sealed-box.selected::after{background:#77572b;color:#fffaf1}
+.draw-stage>#open-box:disabled{background:#565149!important;color:#eee4d5!important;opacity:1}
+.opening-overlay{background:#242321f5;color:#fff1dc}.opening-overlay .kicker{color:#ead8b9}
+.opening-overlay strong{color:#fffaf1}
+button:disabled{opacity:1}.shake-card button:disabled{color:#74695a;background:#e7e1d7}.shake-card button:disabled img{opacity:.6}
