@@ -116,3 +116,15 @@ button:focus-visible,a:focus-visible,select:focus-visible{outline-color:#af8a53}
 .opening-overlay{background:#242321f5;color:#fff1dc}.opening-overlay .kicker{color:#ead8b9}
 .opening-overlay strong{color:#fffaf1}
 button:disabled{opacity:1}.shake-card button:disabled{color:#74695a;background:#e7e1d7}.shake-card button:disabled img{opacity:.6}
+
+/* All collected designs remain visible; duplicates share one card. */
+#reveal-shelf,#batch-summary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:18px;max-height:none;overflow:visible;width:100%}
+.shelf-item{position:relative;color:#29251f;background:#fffdf9;border:1px solid #ded4c4;min-width:0;padding-bottom:8px}
+.shelf-item img{height:210px;object-fit:contain;background:#f0ece4}
+.shelf-item .duplicate-count{position:absolute;top:10px;right:10px;background:#242321;color:#fff1dc;padding:6px 10px;border:1px solid #dec6a0;border-radius:20px;font-size:12px;box-shadow:0 2px 8px #0002}
+.shelf-item small{color:#77572b;line-height:1.5}.shelf-item span{line-height:1.4}
+.skip-unboxing-option{display:flex;align-items:center;justify-content:center;gap:10px;margin:20px 0;color:#fff1dc;font-size:13px;cursor:pointer}
+.skip-unboxing-option input{width:18px;height:18px;accent-color:#c7a26a;cursor:pointer}
+#batch-summary-dialog{background:#faf7f1;color:#29251f;padding:35px;max-height:88dvh;overflow-y:auto}
+#batch-summary-count{color:#62503a;margin:18px 0 24px}
+@media(max-width:600px){#reveal-shelf,#batch-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.shelf-item img{height:185px}#batch-summary-dialog{padding:30px 16px}.skip-unboxing-option{font-size:12px}}
