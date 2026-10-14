@@ -2,7 +2,7 @@
 let purchasedBoxes=[],nextBoxId=1,chosenPurchasedId=null,autoOpening=false,autoTimer=null,autoIds=[];
 let inventoryVisible=60;
 let purchaseSelections=new Set();
-let autoAdvanceClose=false;let autoResults=[];let autoTotal=0;
+let autoAdvanceClose=false;let autoResults=[];let autoTotal=0;let skipChunkSize=1;
 const candidatePools={};
 function candidatesFor(key){if(!candidatePools[key])candidatePools[key]=[];if(!candidatePools[key].length)addCandidates(key,24);return candidatePools[key];}
 function addCandidates(key,count){const pool=candidatePools[key]||(candidatePools[key]=[]);for(let i=0;i<count;i++)pool.push({product:pickProduct(key),hints:null,sold:false});}
@@ -83,7 +83,7 @@ $('#open-box').addEventListener('click',()=>{if(!autoOpening)openPurchased(chose
 $('#reset-reveals').addEventListener('click',()=>{if(busy)return;finishAuto();purchasedBoxes=[];nextBoxId=1;chosenPurchasedId=null;renderInventory();});
 function updateOpeningOptions(){const mode=$('#opening-mode').value,pending=pendingBoxes();$('#opening-count-label').hidden=mode!=='count';$('#opening-count').max=String(pending.length);$('#auto-inventory').textContent=mode==='single'?'单抽 · 开选中的一盒':mode==='count'?'AUTO · 开指定数量':`AUTO · 开全部 ${pending.length} 盒`;$('#opening-options-note').textContent=mode==='single'?'先选择一个已买的盒子，再点单抽。':mode==='count'?'输入数量，按购买顺序自动连续开箱。':'自动打开所有剩余盒子，结束后显示本次总结。';}
 function updateBatchLoading(){const done=autoResults.length;$('#batch-loading-progress').max=autoTotal;$('#batch-loading-progress').value=done;$('#batch-loading-text').textContent=`已开 ${done} / ${autoTotal} 盒 · 剩余 ${autoTotal-done} 盒`;}
-function runSkippedBatch(){if(!autoOpening)return;for(let i=0;i<25&&autoIds.length;i++){const id=autoIds.shift(),box=purchasedBoxes.find(b=>b.id===id&&!b.opened);if(!box)continue;box.opened=true;currentResult=box.product;reveals.unshift(box.product);unlockProduct(box.product);autoResults.push(box.product);}updateBatchLoading();if(autoIds.length){autoTimer=setTimeout(runSkippedBatch,32);}else{autoTimer=setTimeout(()=>{if(!autoOpening)return;renderShelf();finishAuto(true);$('#draw-status').textContent='开箱完成，已显示本次总结。';},180);}}
+function runSkippedBatch(){if(!autoOpening)return;for(let i=0;i<skipChunkSize&&autoIds.length;i++){const id=autoIds.shift(),box=purchasedBoxes.find(b=>b.id===id&&!b.opened);if(!box)continue;box.opened=true;currentResult=box.product;reveals.unshift(box.product);unlockProduct(box.product);autoResults.push(box.product);}updateBatchLoading();if(autoIds.length){autoTimer=setTimeout(runSkippedBatch,350);}else{autoTimer=setTimeout(()=>{if(!autoOpening)return;renderShelf();finishAuto(true);$('#draw-status').textContent='开箱完成，已显示本次总结。';},700);}}
 $('#opening-mode').addEventListener('change',updateOpeningOptions);
 $('#auto-inventory').addEventListener('click',()=>{
  if(busy||autoOpening)return;
@@ -91,7 +91,7 @@ $('#auto-inventory').addEventListener('click',()=>{
  if(mode==='single'){if(!pending.some(b=>b.id===chosenPurchasedId)){$('#draw-status').textContent='请先选择一个已买的盒子。';return;}openPurchased(chosenPurchasedId);return;}
  let quantity=pending.length;if(mode==='count'){quantity=validQuantity($('#opening-count'));if(quantity===null)return;if(quantity>pending.length){$('#opening-count').setCustomValidity(`只剩 ${pending.length} 盒，请输入较小数量。`);$('#opening-count').reportValidity();return;}}
  autoIds=pending.slice(0,quantity).map(box=>box.id);autoTotal=autoIds.length;autoResults=[];autoOpening=true;setControls(true);chosenPurchasedId=null;renderInventory();$('#stop-auto').hidden=false;
- if($('#skip-unboxing').checked){$('#batch-loading-image').src=`assets/box-${pending[0].key}.webp`;updateBatchLoading();$('#batch-loading-dialog').showModal();autoTimer=setTimeout(runSkippedBatch,80);}else openPurchased(autoIds.shift());
+ if($('#skip-unboxing').checked){$('#batch-loading-image').src=`assets/box-${pending[0].key}.webp`;skipChunkSize=Math.max(1,Math.ceil(autoTotal/16));updateBatchLoading();$('#batch-loading-dialog').showModal();autoTimer=setTimeout(runSkippedBatch,700);}else openPurchased(autoIds.shift());
 });
 $('#batch-loading-stop').addEventListener('click',()=>{renderShelf();finishAuto(true);$('#draw-status').textContent='已停止，未开的盒子保留。';});
 $('#batch-loading-dialog').addEventListener('cancel',e=>{e.preventDefault();renderShelf();finishAuto(true);});
