@@ -10,7 +10,7 @@ function shakeHints(product){return shuffled(products.filter(p=>p.category===pro
 function togglePurchasePick(index){const q=validQuantity($('#box-quantity'),Number($('#box-quantity').max));if(q===null)return;if(purchaseSelections.has(index))purchaseSelections.delete(index);else if(purchaseSelections.size<q)purchaseSelections.add(index);updatePurchase();}
 function shuffled(values){const result=values.slice();for(let i=result.length-1;i>0;i--){const j=Math.floor(randomUnit()*(i+1));[result[i],result[j]]=[result[j],result[i]];}return result;}
 function makeWholeSet(key,roll=randomUnit()){const pool=products.filter(p=>p.category===key),result=pool.filter(p=>p.tag==='REGULAR');if(key!=='aespa'&&roll<.30)result[Math.floor(randomUnit()*result.length)]=pool.find(p=>p.tag===(roll<.10?'SUPER SECRET':'SECRET'));return shuffled(result);}
-function validQuantity(input,max=Number(input.max)||Infinity){const q=Number(input.value);if(!Number.isSafeInteger(q)||q<1){input.setCustomValidity('请输入大于 0 的整数。');input.reportValidity();return null;}if(q>max){input.setCustomValidity(`最多可选 ${max}，请减少数量。`);input.reportValidity();return null;}input.setCustomValidity('');return q;}
+function validQuantity(input,max=Number(input.max)||Infinity){const q=Number(input.value);if(!Number.isSafeInteger(q)||q<1){input.setCustomValidity('请输入大于 0 的整数。');input.reportValidity();return null;}if(q>max){input.value=String(max);input.setCustomValidity('');return max;}input.setCustomValidity('');return q;}
 function pendingBoxes(){return purchasedBoxes.filter(b=>!b.opened);}
 function setControls(disabled){['draw-series','box-format','box-quantity','pick-mode','prepare-boxes','reset-reveals','auto-inventory','skip-unboxing','opening-mode','opening-count'].forEach(id=>$('#'+id).disabled=disabled);document.querySelectorAll('.series-actions button').forEach(b=>b.disabled=disabled);$('#draw-again').disabled=disabled;}
 function renderInventory(){
@@ -32,7 +32,7 @@ function updatePurchase(){
  $('#format-description').textContent=whole?`${s.set} boxes per set. Buying adds sealed boxes to My boxes; you decide when to open them.`:'Buying adds sealed boxes to My boxes. The figure stays unknown until you open it.';
  $('#format-image').src=whole?`assets/set-${key}.webp`:`assets/box-${key}.webp`;
  $('#pick-mode-row').hidden=whole;$('#quantity-label').textContent=whole?'端盒数量 · 每次最多 10 端':'单盒数量 · 每次最多 50 盒';
- const max=whole?10:50;$('#box-quantity').max=String(max);$('#purchase-limit-note').textContent=whole?`每次最多 10 端 · 每端 ${s.set} 盒，共最多 ${10*s.set} 盒。`:'每次最多 50 个单盒（随机选盒和自己选盒均适用）。';
+ const max=whole?10:50;$('#box-quantity').max=String(max);if(Number($('#box-quantity').value)>max)$('#box-quantity').value=String(max);$('#purchase-limit-note').textContent=whole?`每次最多 10 端 · 每端 ${s.set} 盒，共最多 ${10*s.set} 盒。`:'每次最多 50 个单盒（随机选盒和自己选盒均适用）。';
  $('#purchase-picks').hidden=!manual;const grid=$('#purchase-pick-grid');const oldScroll=grid.scrollLeft;grid.replaceChildren();
  if(manual){
   const pool=candidatesFor(key);
@@ -138,3 +138,5 @@ enableDragRail($('#box-grid'));
 $('#inventory-prev').addEventListener('click',()=>$('#box-grid').scrollBy({left:-600,behavior:reduced.matches?'auto':'smooth'}));
 $('#inventory-next').addEventListener('click',()=>$('#box-grid').scrollBy({left:600,behavior:reduced.matches?'auto':'smooth'}));
 $('#more-inventory').addEventListener('click',()=>{inventoryVisible+=60;renderInventory();});
+
+$('#box-quantity').addEventListener('input',()=>{const input=$('#box-quantity'),max=Number(input.max);if(Number(input.value)>max){input.value=String(max);input.setCustomValidity('');purchaseSelections.clear();updatePurchase();}});
